@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --font-cursive: 'Caveat', cursive;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --color-presently-dark: #1b3832;
+  --color-presently-deep: #254b42;
+  --color-presently-primary: #659287;
+  --color-presently-sage: #88bda4;
+  --color-presently-mint: #b1d3b9;
+  --color-presently-cream: #e6f2dd;
+  --color-presently-bg: #f5f8f5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-presently-bg);
+  color: var(--color-presently-dark);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-cursive {
+  font-family: var(--font-cursive);
+}
+
+.font-serif-editorial {
+  font-family: var(--font-serif);
+}

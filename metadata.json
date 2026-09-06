@@ -1,0 +1,6 @@
+{
+  "name": "Presently",
+  "description": "A live presentation remote and companion display that effortlessly connects your phone and tablet to your laptop.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
