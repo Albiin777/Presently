@@ -95,7 +95,9 @@ class ConnectionService {
     this.info.state = 'CONNECTED';
     this.info.pendingApproval = false;
     this.info.connectedAt = Date.now();
-    this.notify(true, 'APPROVE_PAIR');
+    this.notify(true, 'APPROVE_PAIR', { state: 'CONNECTED' });
+    // Also send an explicit state synchronization broadcast
+    this.notify(true, 'SYNC_CONNECTION', this.info);
   }
 
   public declineConnection(): void {
