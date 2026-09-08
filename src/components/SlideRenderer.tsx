@@ -286,8 +286,8 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
               </div>
             </div>
           )}
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
