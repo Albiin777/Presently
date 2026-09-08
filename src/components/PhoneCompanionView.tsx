@@ -3,6 +3,7 @@ import { SlideRenderer } from './SlideRenderer';
 import { PresentationState, SlideData, Device, ConnectionState } from '../types';
 import { deviceDiscoveryService } from '../services/deviceDiscoveryService';
 import { connectionService } from '../services/connectionService';
+import { realtimeService } from '../services/realtimeService';
 import {
   ArrowLeft,
   ArrowRight,
@@ -237,14 +238,26 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
                   <h1 className="font-cursive text-3xl sm:text-4xl text-[#b1d3b9] font-bold tracking-tight">
                     Presently
                   </h1>
-                  {/* Rotation simulation toggle */}
-                  <button
-                    onClick={() => setManualRotation(true)}
-                    title="Rotate phone to landscape"
-                    className="p-1.5 rounded-full text-[#88bda4] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  >
-                    <RotateCw className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {/* Manual Refresh / Pull Active Deck */}
+                    <button
+                      onClick={() => {
+                        realtimeService.broadcast('DISCOVER_HOSTS');
+                      }}
+                      title="Sync active presentation from laptop"
+                      className="p-1.5 rounded-full text-[#88bda4] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    >
+                      <RotateCw className="w-4 h-4" />
+                    </button>
+                    {/* Rotation simulation toggle */}
+                    <button
+                      onClick={() => setManualRotation(!effectiveLandscape)}
+                      title="Toggle landscape orientation"
+                      className="p-1.5 rounded-full text-[#88bda4] hover:text-white hover:bg-white/10 transition-colors cursor-pointer text-xs font-mono"
+                    >
+                      {effectiveLandscape ? '📱' : '🔄'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="inline-flex flex-col items-center">

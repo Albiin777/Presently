@@ -154,7 +154,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
             </div>
           ) : null}
 
-          {slide.graphicType === 'hero' && (
+          {!slide.isRealSlide && slide.graphicType === 'hero' && (
             <div className="max-w-xl">
               <h2 className="font-serif-editorial text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal tracking-tight text-white leading-[1.15]">
                 {slide.title}

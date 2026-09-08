@@ -172,9 +172,9 @@ export const DEMO_SLIDES: SlideData[] = [
   },
   {
     id: 12,
-    category: 'INCINERATE Launch',
+    category: 'Keynote Feature',
     title: 'Igniting the next era of presentation.',
-    subtitle: 'A high-impact overview of INCINERATE framework.',
+    subtitle: 'A high-impact overview of the Presently framework.',
     graphicType: 'hero',
     highlightText: 'Simplicity is the ultimate presentation sophistication.',
     bulletPoints: [
@@ -182,11 +182,11 @@ export const DEMO_SLIDES: SlideData[] = [
       'Sub-millisecond canvas caching for butter-smooth advances',
       'Crystal-clear typography optimized for large venue projection',
     ],
-    notes: 'Slide 12: Introduce the INCINERATE deck. Highlight how rapidly the deck was loaded and how effortlessly the phone controls it.',
+    notes: 'Slide 12: Highlight how rapidly the presentation is loaded and how effortlessly the phone controls it.',
     meta: {
-      author: 'INCINERATE Project Lead',
-      statValue: '28',
-      statLabel: 'slides compiled into high-fidelity vectors',
+      author: 'Presently Labs',
+      statValue: '100%',
+      statLabel: 'hardware acceleration and local peer sync',
     },
   },
   {
@@ -229,7 +229,7 @@ export const DEMO_SLIDES: SlideData[] = [
     notes: `Notes for slide ${15 + i}: Keep the tempo steady and maintain connection with your audience.`,
     meta: {
       statValue: `${15 + i}`,
-      statLabel: 'of 28 slides in INCINERATE.pptx',
+      statLabel: 'of presentation slides',
     },
   })),
 ];

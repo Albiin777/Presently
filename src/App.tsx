@@ -15,6 +15,7 @@ import { useDisplay } from './hooks/useDisplay';
 import { useOrientation } from './hooks/useOrientation';
 import { DeviceRole } from './types';
 import { realtimeService } from './services/realtimeService';
+import { presentationService } from './services/presentationService';
 import { X, Heart } from 'lucide-react';
 
 export default function App() {
@@ -67,10 +68,14 @@ export default function App() {
       // Periodic announce and listener for probes
       const announce = () => {
         realtimeService.broadcast('ANNOUNCE_HOST', hostLaptop);
+        const currentState = presentationService.getState();
+        if (currentState.file || (currentState.slides && currentState.slides.length > 0)) {
+          realtimeService.broadcast('SYNC_PRESENTATION_STATE', currentState);
+        }
       };
 
       announce();
-      const interval = setInterval(announce, 4000);
+      const interval = setInterval(announce, 2500);
 
       const unsubscribe = realtimeService.subscribe((msg) => {
         if (msg.type === 'DISCOVER_HOSTS') {
@@ -268,7 +273,10 @@ export default function App() {
               /* STAGE 2: CHOOSE PRESENTATION (Only After Phone is Connected!) */
               <PresentationPicker
                 loadedFile={presentation.file}
-                onSelectFile={(name, total, customSlides) => presentation.loadPresentation(name, total, customSlides)}
+                onSelectFile={(name, total, customSlides) => {
+                  presentation.loadPresentation(name, total, customSlides);
+                  presentation.startPresenting();
+                }}
                 onStartPresenting={() => presentation.startPresenting()}
               />
             )}

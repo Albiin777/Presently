@@ -225,8 +225,8 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
                       </p>
                     </div>
                     <div className="relative z-10 flex justify-between items-center text-[7px] text-[#b1d3b9]">
-                      <span>INCINERATE.pptx</span>
-                      <span className="font-mono">12 / 28</span>
+                      <span>Presentation.pdf</span>
+                      <span className="font-mono">12 / 38</span>
                     </div>
                   </div>
 
@@ -316,7 +316,7 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
                       <span>Private Speaker Notes</span>
                     </span>
                     <p className="text-[10px] text-[#e6f2dd] mt-1 leading-snug">
-                      "Slide 12: Introduce INCINERATE. Highlight that the phone drives transitions while notes stay right here."
+                      "Slide 12: Introduce key points. Highlight that the phone drives transitions while notes stay right here."
                     </p>
                   </div>
 
@@ -410,8 +410,8 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
                     </div>
 
                     <div className="relative z-10 flex items-center justify-between text-[7px] text-[#b1d3b9] pt-1 border-t border-white/10">
-                      <span>INCINERATE · 28 slides</span>
-                      <span className="font-mono">12 / 28</span>
+                      <span>Presentation · 38 slides</span>
+                      <span className="font-mono">12 / 38</span>
                     </div>
                   </div>
 

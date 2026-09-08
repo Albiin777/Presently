@@ -93,7 +93,7 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
           <div className="w-3 h-3 rounded-full bg-emerald-400" />
           <div>
             <h3 className="text-sm font-semibold tracking-wide flex items-center gap-2">
-              <span>{connectionInfo.targetDevice?.name || "Albin's Laptop"}</span>
+              <span>{connectionInfo.laptopDevice?.name || "Albin's Laptop"}</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#254b42] text-[#b1d3b9] border border-[#659287]/40">
                 Presenter Workspace
               </span>
