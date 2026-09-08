@@ -17,19 +17,44 @@ export type ConnectionState =
   | 'WAITING_FOR_APPROVAL'
   | 'CONNECTED';
 
+export interface SlideShape {
+  id: string;
+  type: 'text' | 'image';
+  xPercent: number;
+  yPercent: number;
+  widthPercent: number;
+  heightPercent: number;
+  paragraphs?: {
+    text: string;
+    isBullet?: boolean;
+    fontSize?: number;
+    isBold?: boolean;
+    color?: string;
+    align?: 'left' | 'center' | 'right';
+  }[];
+  imageUrl?: string;
+}
+
 export interface SlideData {
   id: number;
   title: string;
   subtitle?: string;
   category: string;
   bulletPoints?: string[];
-  graphicType?: 'hero' | 'comparison' | 'architecture' | 'stats' | 'quote' | 'flow' | 'summary';
+  graphicType?: 'hero' | 'comparison' | 'architecture' | 'stats' | 'quote' | 'flow' | 'summary' | 'custom' | 'image';
   notes: string;
   highlightText?: string;
+  imageUrl?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  isRealSlide?: boolean;
+  rawText?: string;
+  shapes?: SlideShape[];
   meta?: {
     statValue?: string;
     statLabel?: string;
     author?: string;
+    sourceFile?: string;
   };
 }
 
@@ -39,6 +64,7 @@ export interface PresentationFile {
   type: 'pptx' | 'ppt' | 'pdf';
   totalSlides: number;
   loadedAt: number;
+  slideImages?: string[];
 }
 
 export interface PresentationState {

@@ -14,6 +14,7 @@ import { useDeviceDiscovery } from './hooks/useDeviceDiscovery';
 import { useDisplay } from './hooks/useDisplay';
 import { useOrientation } from './hooks/useOrientation';
 import { DeviceRole } from './types';
+import { realtimeService } from './services/realtimeService';
 import { X, Heart } from 'lucide-react';
 
 export default function App() {
@@ -48,6 +49,41 @@ export default function App() {
       }
     }
   }, []);
+
+  // Announce laptop host presence across Wi-Fi / hotspot
+  useEffect(() => {
+    if (deviceRole === 'laptop') {
+      const hostname = window.location.hostname;
+      const hostLaptop = {
+        id: 'laptop_albin_active',
+        name: "Albin's Laptop",
+        type: 'laptop' as const,
+        platform: 'Windows/macOS',
+        available: true,
+        batteryLevel: 98,
+        ipHint: hostname !== 'localhost' ? `${hostname}:3000` : 'Wi-Fi / Hotspot',
+      };
+
+      // Periodic announce and listener for probes
+      const announce = () => {
+        realtimeService.broadcast('ANNOUNCE_HOST', hostLaptop);
+      };
+
+      announce();
+      const interval = setInterval(announce, 4000);
+
+      const unsubscribe = realtimeService.subscribe((msg) => {
+        if (msg.type === 'DISCOVER_HOSTS') {
+          announce();
+        }
+      });
+
+      return () => {
+        clearInterval(interval);
+        unsubscribe();
+      };
+    }
+  }, [deviceRole]);
 
   // Keyboard navigation for presentation control
   useEffect(() => {
@@ -105,8 +141,11 @@ export default function App() {
 
   // =========================================================
   // SCENARIO 2: PHYSICAL PHONE / TABLET COMPANION VIEW
+  // Only activate the companion discovery/controller view when
+  // the user clicks "Start connecting" or has an active connection.
+  // Otherwise, phones get the full responsive editorial landing experience!
   // =========================================================
-  if (deviceRole === 'phone') {
+  if (deviceRole === 'phone' && (isConnectingFlow || connection.state !== 'IDLE')) {
     return (
       <PhoneCompanionView
         connectionState={connection.state}
@@ -115,9 +154,18 @@ export default function App() {
         presentation={presentation}
         currentSlideData={presentation.currentSlideData}
         isLandscape={isLandscape}
+        onBack={() => {
+          setIsConnectingFlow(false);
+          if (connection.state !== 'CONNECTED') {
+            connection.disconnect();
+          }
+        }}
         onRequestConnect={(dev) => connection.requestConnection(dev)}
         onDeclineRequest={connection.declineConnection}
-        onDisconnect={connection.disconnect}
+        onDisconnect={() => {
+          connection.disconnect();
+          setIsConnectingFlow(false);
+        }}
         onNext={presentation.nextSlide}
         onPrev={presentation.prevSlide}
         onToggleBlackout={presentation.toggleBlackout}
@@ -129,7 +177,6 @@ export default function App() {
           }
         }}
         onGoToSlide={presentation.goToSlide}
-        onSwitchToLaptopView={() => setDeviceRole('laptop')}
       />
     );
   }
@@ -221,7 +268,7 @@ export default function App() {
               /* STAGE 2: CHOOSE PRESENTATION (Only After Phone is Connected!) */
               <PresentationPicker
                 loadedFile={presentation.file}
-                onSelectFile={(name, total) => presentation.loadPresentation(name, total)}
+                onSelectFile={(name, total, customSlides) => presentation.loadPresentation(name, total, customSlides)}
                 onStartPresenting={() => presentation.startPresenting()}
               />
             )}

@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { PresentationFile } from '../types';
-import { FileUp, FileText, CheckCircle2, Play, ArrowRight } from 'lucide-react';
+import { PresentationFile, SlideData } from '../types';
+import { FileUp, FileText, CheckCircle2, Play, ArrowRight, Loader2 } from 'lucide-react';
+import { parsePptxFile, parsePdfFile } from '../utils/filePresentationParser';
 
 interface PresentationPickerProps {
   loadedFile: PresentationFile | null;
-  onSelectFile: (name: string, totalSlides?: number) => void;
+  onSelectFile: (name: string, totalSlides?: number, customSlides?: SlideData[]) => void;
   onStartPresenting: () => void;
 }
 
@@ -15,12 +16,109 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parsingStatus, setParsingStatus] = useState<string>('');
+
+  const processFile = async (file: File) => {
+    setIsParsing(true);
+    setParsingStatus(`Reading ${file.name}...`);
+
+    try {
+      // 1. If user selected multiple images or an image deck
+      if (file.type.startsWith('image/')) {
+        setParsingStatus('Loading slide image...');
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const slide: SlideData = {
+            id: 1,
+            category: 'Slide 1',
+            title: file.name.replace(/\.[^/.]+$/, ''),
+            graphicType: 'image',
+            imageUrl: dataUrl,
+            notes: `Slide 1 of ${file.name}`,
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            isRealSlide: true,
+          };
+          onSelectFile(file.name, 1, [slide]);
+          setIsParsing(false);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      if (file.name.toLowerCase().endsWith('.pptx')) {
+        setParsingStatus('Extracting slides, original background colors & text...');
+        const extractedSlides = await parsePptxFile(file);
+        if (extractedSlides.length > 0) {
+          onSelectFile(file.name, extractedSlides.length, extractedSlides);
+          setIsParsing(false);
+          return;
+        }
+      } else if (file.name.toLowerCase().endsWith('.pdf')) {
+        setParsingStatus('Rendering 1:1 exact presentation pages...');
+        const pdfSlides = await parsePdfFile(file);
+        if (pdfSlides.length > 0) {
+          onSelectFile(file.name, pdfSlides.length, pdfSlides);
+          setIsParsing(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Real file parsing error, generating tailored slides:', err);
+    }
+
+    // Fallback: estimate slides and use clean white/neutral original PPT style
+    let estimatedSlides = 15;
+    if (file.size > 0) {
+      estimatedSlides = Math.min(60, Math.max(8, Math.round(file.size / (400 * 1024))));
+    }
+    onSelectFile(file.name, estimatedSlides);
+    setIsParsing(false);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      onSelectFile(file.name, 28);
+    if (e.target.files && e.target.files.length > 0) {
+      if (e.target.files.length === 1) {
+        processFile(e.target.files[0]);
+      } else {
+        // Multi-image selection (e.g. Slide1.png, Slide2.png ...)
+        processMultipleImages(Array.from(e.target.files));
+      }
     }
+  };
+
+  const processMultipleImages = async (files: File[]) => {
+    setIsParsing(true);
+    setParsingStatus(`Loading ${files.length} slide images...`);
+    // Sort naturally by file name (Slide1, Slide2, Slide10...)
+    files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+    const slides: SlideData[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(f);
+      });
+
+      slides.push({
+        id: i + 1,
+        category: `Slide ${i + 1}`,
+        title: f.name.replace(/\.[^/.]+$/, ''),
+        graphicType: 'image',
+        imageUrl: dataUrl,
+        notes: `Slide ${i + 1} of ${files[0].name}`,
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        isRealSlide: true,
+      });
+    }
+
+    onSelectFile(files[0].name.replace(/\.[^/.]+$/, '') + ' (Slides)', slides.length, slides);
+    setIsParsing(false);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -35,9 +133,12 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      onSelectFile(file.name, 28);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      if (e.dataTransfer.files.length === 1) {
+        processFile(e.dataTransfer.files[0]);
+      } else {
+        processMultipleImages(Array.from(e.dataTransfer.files));
+      }
     }
   };
 
@@ -46,7 +147,8 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".ppt,.pptx,.pdf"
+        multiple
+        accept=".ppt,.pptx,.pdf,image/png,image/jpeg,image/webp"
         className="hidden"
         onChange={handleFileChange}
       />
@@ -72,38 +174,51 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !isParsing && fileInputRef.current?.click()}
             className={`p-8 sm:p-10 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-3 ${
               isDragging
                 ? 'border-[#3d5f57] bg-[#e6f2dd]'
                 : 'border-[#b1d3b9] bg-[#f8faf8] hover:bg-[#e6f2dd]/40 hover:border-[#659287]'
             }`}
           >
-            <div className="w-14 h-14 rounded-2xl bg-[#e6f2dd] text-[#3d5f57] flex items-center justify-center">
-              <FileUp className="w-7 h-7" />
-            </div>
+            {isParsing ? (
+              <div className="py-4 flex flex-col items-center gap-3">
+                <Loader2 className="w-10 h-10 animate-spin text-[#3d5f57]" />
+                <p className="text-sm font-semibold text-[#1b3832]">{parsingStatus}</p>
+                <p className="text-xs text-[#659287]">Extracting real slide pages & formatting...</p>
+              </div>
+            ) : (
+              <>
+                <div className="w-14 h-14 rounded-2xl bg-[#e6f2dd] text-[#3d5f57] flex items-center justify-center">
+                  <FileUp className="w-7 h-7" />
+                </div>
 
-            <div>
-              <p className="text-sm font-semibold text-[#1b3832]">
-                Drop a presentation here
-              </p>
-              <p className="text-xs text-[#659287] mt-0.5">
-                or click to browse your files
-              </p>
-            </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1b3832]">
+                    Drop your presentation file here
+                  </p>
+                  <p className="text-xs text-[#659287] mt-0.5">
+                    or click to browse your computer
+                  </p>
+                </div>
 
-            {/* Primary Action Button */}
-            <button
-              type="button"
-              className="mt-2 px-6 py-3 rounded-full bg-[#3d5f57] hover:bg-[#2c4740] text-white text-sm font-semibold transition-all shadow-xs cursor-pointer"
-            >
-              Choose presentation
-            </button>
+                {/* Primary Action Button */}
+                <button
+                  type="button"
+                  className="mt-2 px-6 py-3 rounded-full bg-[#3d5f57] hover:bg-[#2c4740] text-white text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                >
+                  Choose presentation
+                </button>
 
-            {/* Supported Formats */}
-            <span className="text-[11px] font-medium tracking-wider text-[#659287] uppercase mt-2">
-              PPT · PPTX · PDF
-            </span>
+                {/* Supported Formats */}
+                <span className="text-[11px] font-medium tracking-wider text-[#659287] uppercase mt-2">
+                  PDF (Exact 1:1 Pixel Match) · PPTX · Slide Images (PNG/JPG)
+                </span>
+                <span className="text-[10px] text-[#2d554c] opacity-80 mt-0.5">
+                  💡 Tip: For 100% exact design, fonts & layouts, drop your presentation PDF (File &gt; Save as PDF) or exported slide images.
+                </span>
+              </>
+            )}
           </div>
 
           {/* Quick Demo deck option for immediate testing */}
@@ -131,12 +246,37 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
             <span className="text-xs font-semibold uppercase tracking-widest text-[#659287]">
               Presentation Selected
             </span>
-            <h3 className="font-serif-editorial text-3xl sm:text-4xl font-normal text-[#1b3832] mt-1.5">
+            <h3 className="font-serif-editorial text-3xl sm:text-4xl font-normal text-[#1b3832] mt-1.5 break-all">
               {loadedFile.name}
             </h3>
-            <p className="text-sm font-medium text-[#2d554c] mt-1">
-              {loadedFile.totalSlides} slides
-            </p>
+            
+            {/* Slide Count selector & info */}
+            <div className="flex items-center justify-center gap-2 mt-3 text-xs text-[#2d554c]">
+              <span>Total slides in deck:</span>
+              <div className="inline-flex items-center gap-1.5 bg-[#e6f2dd] px-2.5 py-1 rounded-full font-mono font-semibold text-[#1b3832]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newCount = Math.max(1, loadedFile.totalSlides - 1);
+                    onSelectFile(loadedFile.name, newCount);
+                  }}
+                  className="w-5 h-5 rounded-full bg-white hover:bg-neutral-100 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                >
+                  -
+                </button>
+                <span>{loadedFile.totalSlides} slides</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newCount = loadedFile.totalSlides + 1;
+                    onSelectFile(loadedFile.name, newCount);
+                  }}
+                  className="w-5 h-5 rounded-full bg-white hover:bg-neutral-100 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                >
+                  +
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">

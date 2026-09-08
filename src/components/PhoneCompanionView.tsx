@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { SlideRenderer } from './SlideRenderer';
 import { PresentationState, SlideData, Device, ConnectionState } from '../types';
+import { deviceDiscoveryService } from '../services/deviceDiscoveryService';
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +23,7 @@ interface PhoneCompanionViewProps {
   presentation: PresentationState;
   currentSlideData: SlideData;
   isLandscape: boolean;
+  onBack?: () => void;
   onRequestConnect: (dev: Device) => void;
   onDeclineRequest: () => void;
   onDisconnect: () => void;
@@ -30,7 +32,6 @@ interface PhoneCompanionViewProps {
   onToggleBlackout: () => void;
   onTogglePresenting: () => void;
   onGoToSlide?: (num: number) => void;
-  onSwitchToLaptopView?: () => void;
 }
 
 export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
@@ -40,6 +41,7 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
   presentation,
   currentSlideData,
   isLandscape: initialLandscape,
+  onBack,
   onRequestConnect,
   onDeclineRequest,
   onDisconnect,
@@ -47,7 +49,6 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
   onPrev,
   onToggleBlackout,
   onTogglePresenting,
-  onSwitchToLaptopView,
 }) => {
   // Allow manual rotation simulation in demo mode alongside viewport orientation
   const [manualRotation, setManualRotation] = useState<boolean | null>(null);
@@ -89,7 +90,7 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
 
   return (
     <div
-      className="min-h-screen w-full bg-[#111e1a] text-white flex flex-col justify-between select-none overflow-x-hidden font-sans"
+      className="min-h-screen min-h-[100dvh] h-[100dvh] w-full bg-[#111e1a] text-white flex flex-col justify-between select-none overflow-x-hidden font-sans pb-[env(safe-area-inset-bottom,0px)] pt-[env(safe-area-inset-top,0px)]"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onKeyDown={handleKeyDown}
@@ -99,21 +100,41 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
       {/* 1. STATE: NOT CONNECTED YET (NEARBY LAPTOPS DISCOVERY)    */}
       {/* ========================================================= */}
       {connectionState !== 'CONNECTED' && (
-        <div className="flex-1 max-w-md w-full mx-auto p-5 flex flex-col justify-between">
-          {/* Brand Header */}
-          <div className="text-center pt-4 pb-6">
-            <h1 className="font-cursive text-4xl text-[#b1d3b9] font-bold tracking-tight">
+        <div className="flex-1 max-w-md w-full mx-auto px-5 pt-4 sm:pt-6 pb-8 flex flex-col justify-start relative">
+          {/* Top Bar: Back to Overview & Network Scan Pill */}
+          <div className="w-full flex items-center justify-between pb-4 pt-1">
+            {onBack ? (
+              <button
+                onClick={onBack}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1b3832] hover:bg-[#23463e] border border-[#2d554c] text-xs text-[#88bda4] hover:text-white transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Overview</span>
+              </button>
+            ) : (
+              <span />
+            )}
+
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#162723] border border-[#2d554c] text-[11px] text-[#88bda4]">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Same Wi-Fi / Hotspot</span>
+            </div>
+          </div>
+
+          {/* Editorial Brand Header - Clean, Left-Aligned Elegance */}
+          <div className="pt-2 pb-6 border-b border-[#2d554c]/50 mb-5">
+            <h1 className="font-cursive text-3xl sm:text-4xl text-[#b1d3b9] font-bold tracking-tight">
               Presently
             </h1>
-            <p className="text-xs text-[#88bda4] mt-1 font-medium">
+            <p className="text-xs text-[#88bda4] mt-0.5 font-medium">
               Phone Companion Remote
             </p>
           </div>
 
           {/* Body Content based on Discovery / Approval */}
-          <div className="flex-1 flex flex-col justify-center">
+          <div className="flex flex-col">
             {connectionState === 'WAITING_FOR_APPROVAL' ? (
-              <div className="p-6 rounded-3xl bg-[#1b3832] border border-[#659287]/50 text-center shadow-xl animate-in fade-in zoom-in-95">
+              <div className="p-6 rounded-3xl bg-[#1b3832] border border-[#659287]/50 text-center shadow-xl animate-in fade-in zoom-in-95 my-auto">
                 <Loader2 className="w-10 h-10 animate-spin text-[#88bda4] mx-auto mb-4" />
                 <h3 className="font-serif-editorial text-2xl text-white">
                   Waiting for approval
@@ -131,37 +152,47 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
             ) : (
               /* Nearby Laptops List */
               <div className="space-y-4 animate-in fade-in">
-                <div className="text-left px-1">
-                  <h2 className="font-serif-editorial text-2xl sm:text-3xl text-white">
-                    Nearby laptops
-                  </h2>
-                  <p className="text-xs text-[#88bda4] mt-1">
-                    Choose a laptop to connect.
-                  </p>
+                <div className="flex items-end justify-between px-1">
+                  <div>
+                    <h2 className="font-serif-editorial text-2xl sm:text-3xl text-white">
+                      Nearby laptops
+                    </h2>
+                    <p className="text-xs text-[#88bda4] mt-1">
+                      Choose a laptop to connect.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deviceDiscoveryService.scanForDevices()}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-[#88bda4] hover:text-white transition-colors cursor-pointer p-1"
+                    title="Rescan local network"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    <span>Scan</span>
+                  </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 pt-1">
                   {discoveredDevices.map((dev) => (
                     <div
                       key={dev.id}
                       className="p-4 rounded-2xl bg-[#1b3832] border border-[#2d554c] hover:border-[#659287] transition-all flex items-center justify-between shadow-sm"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center">
+                        <div className="w-11 h-11 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center shrink-0">
                           <Laptop className="w-5 h-5" />
                         </div>
                         <div>
                           <h4 className="text-sm font-semibold text-white">{dev.name}</h4>
-                          <span className="text-xs text-emerald-400 flex items-center gap-1 mt-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Ready to connect
+                          <span className="text-[11px] text-emerald-400 flex items-center gap-1.5 mt-0.5 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                            <span>{dev.ipHint || 'Ready to connect'}</span>
                           </span>
                         </div>
                       </div>
 
                       <button
                         onClick={() => onRequestConnect(dev)}
-                        className="px-5 py-2.5 rounded-full bg-[#3d5f57] hover:bg-[#2c4740] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        className="px-5 py-2.5 rounded-full bg-[#3d5f57] hover:bg-[#2c4740] active:scale-95 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
                       >
                         <span>Connect</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -170,18 +201,6 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Footer Note */}
-          <div className="py-4 text-center">
-            {onSwitchToLaptopView && (
-              <button
-                onClick={onSwitchToLaptopView}
-                className="text-xs text-[#88bda4] hover:text-white underline transition-colors cursor-pointer"
-              >
-                Switch to Laptop View
-              </button>
             )}
           </div>
         </div>
@@ -222,6 +241,11 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
                   <span className="text-sm font-semibold text-white mt-0.5">
                     {laptopName}
                   </span>
+                  {presentation.title && (
+                    <span className="text-[11px] text-[#b1d3b9] bg-[#162a24] px-2.5 py-0.5 rounded-full mt-1 border border-[#2d554c] max-w-[220px] truncate">
+                      {presentation.title}
+                    </span>
+                  )}
                 </div>
               </div>
 

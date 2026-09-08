@@ -1,11 +1,13 @@
 import { PresentationState, PresentationFile, SlideData } from '../types';
 import { DEMO_SLIDES } from '../data/slides';
 import { realtimeService } from './realtimeService';
+import { generateSlidesForFile } from '../utils/slideGenerator';
 
 export type PresentationChangeListener = (state: PresentationState) => void;
 
 class PresentationService {
   private state: PresentationState = {
+    title: 'INCINERATE.pptx',
     file: null,
     currentSlide: 12,
     totalSlides: DEMO_SLIDES.length,
@@ -21,8 +23,26 @@ class PresentationService {
   constructor() {
     realtimeService.subscribe((msg) => {
       if (msg.type === 'LOAD_PRESENTATION') {
-        const payload = msg.payload as PresentationFile;
-        this.state.file = payload;
+        const payload = msg.payload as { file: PresentationFile; slides?: SlideData[] } | PresentationFile;
+        if ('file' in payload && payload.file) {
+          this.state.file = payload.file;
+          this.state.title = payload.file.name;
+          if (payload.slides && payload.slides.length > 0) {
+            this.state.slides = payload.slides;
+            this.state.totalSlides = payload.slides.length;
+          }
+        } else {
+          const file = payload as PresentationFile;
+          this.state.file = file;
+          this.state.title = file.name;
+          if (!file.name.includes('INCINERATE')) {
+            this.state.slides = generateSlidesForFile(file.name, file.totalSlides || 20);
+            this.state.totalSlides = this.state.slides.length;
+          } else {
+            this.state.slides = DEMO_SLIDES;
+            this.state.totalSlides = DEMO_SLIDES.length;
+          }
+        }
         this.state.currentSlide = 1;
         this.state.presenting = false;
         this.notify(false);
@@ -82,19 +102,27 @@ class PresentationService {
     };
   }
 
-  public loadPresentation(name: string, totalSlides = 28): void {
+  public loadPresentation(name: string, totalSlides = 20, customSlides?: SlideData[]): void {
+    const isDemo = name.includes('INCINERATE');
+    const actualSlides = customSlides || (isDemo ? DEMO_SLIDES : generateSlidesForFile(name, totalSlides));
+    const count = actualSlides.length;
+
     const file: PresentationFile = {
       name,
       size: '14.2 MB',
       type: name.endsWith('.pdf') ? 'pdf' : 'pptx',
-      totalSlides,
+      totalSlides: count,
       loadedAt: Date.now(),
     };
+
     this.state.file = file;
-    // Default to slide 12 for the INCINERATE keynote demonstration
-    this.state.currentSlide = name.includes('INCINERATE') ? 12 : 1;
-    this.state.totalSlides = totalSlides;
-    this.notify(true, 'LOAD_PRESENTATION', file);
+    this.state.title = name;
+    this.state.slides = actualSlides;
+    this.state.totalSlides = count;
+    this.state.currentSlide = isDemo ? 12 : 1;
+    this.state.presenting = false;
+
+    this.notify(true, 'LOAD_PRESENTATION', { file, slides: actualSlides });
   }
 
   public startPresenting(): void {

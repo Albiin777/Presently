@@ -76,7 +76,59 @@ export const InteractiveConnection: React.FC<InteractiveConnectionProps> = ({
       {/* ========================================================= */}
       {deviceRole === 'laptop' && (
         <div className="space-y-6">
-          {state === 'IDLE' && (
+          {/* Waiting for approval takes absolute priority */}
+          {state === 'WAITING_FOR_APPROVAL' ? (
+            <div className="p-7 rounded-2xl bg-[#e6f2dd] border border-[#b1d3b9] text-center shadow-md animate-in fade-in zoom-in-95">
+              <div className="w-14 h-14 rounded-full bg-[#3d5f57] text-white flex items-center justify-center mx-auto mb-3.5 shadow-sm">
+                <Smartphone className="w-7 h-7" />
+              </div>
+
+              <h4 className="font-serif-editorial text-3xl text-[#1b3832]">
+                Connection request
+              </h4>
+
+              <p className="text-sm text-[#2d554c] mt-2 max-w-sm mx-auto leading-relaxed">
+                <strong>{targetDevice?.name || "Albin's Phone"}</strong> wants to connect to this laptop.
+              </p>
+
+              <div className="mt-7 flex items-center justify-center gap-4">
+                <button
+                  onClick={onDecline}
+                  className="px-6 py-2.5 text-xs font-semibold text-[#2d554c] bg-white border border-[#b1d3b9] rounded-full hover:bg-neutral-50 transition-colors cursor-pointer"
+                >
+                  Decline
+                </button>
+                <button
+                  onClick={onApprove}
+                  className="px-8 py-2.5 text-xs font-semibold text-white bg-[#3d5f57] hover:bg-[#2c4740] rounded-full transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Allow & Connect</span>
+                </button>
+              </div>
+            </div>
+          ) : state === 'CONNECTED' ? (
+            <div className="text-center py-4">
+              <div className="w-14 h-14 rounded-full bg-[#e6f2dd] text-emerald-700 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle2 className="w-7 h-7 text-[#3d5f57]" />
+              </div>
+              <h3 className="font-serif-editorial text-3xl font-normal text-[#1b3832]">
+                You're connected.
+              </h3>
+              <p className="text-sm text-[#2d554c] mt-1.5">
+                Your phone is ready to control your presentation.
+              </p>
+              <div className="mt-5">
+                <button
+                  onClick={onDisconnect}
+                  className="text-xs text-[#659287] hover:text-[#1b3832] transition-colors cursor-pointer underline"
+                >
+                  Disconnect phone
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* IDLE, DISCOVERING, or DEVICES_FOUND: Laptop is discoverable */
             <div className="text-center py-3">
               <div className="w-16 h-16 rounded-2xl bg-[#e6f2dd] text-[#3d5f57] flex items-center justify-center mx-auto mb-3.5 shadow-2xs">
                 <Laptop className="w-8 h-8" />
@@ -87,13 +139,13 @@ export const InteractiveConnection: React.FC<InteractiveConnectionProps> = ({
               </h3>
 
               <p className="text-sm text-[#2d554c] mt-2 max-w-sm mx-auto leading-relaxed">
-                Open Presently on your phone and select this laptop to connect.
+                Open Presently on your phone and tap <strong>Connect</strong> on this laptop.
               </p>
 
               {/* Zero-Config Discoverable Badge */}
               <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f4f8f4] border border-[#b1d3b9] text-xs font-medium text-[#2d554c] shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Discoverable as <strong>Albin's Laptop</strong></span>
+                <span>Discoverable on Wi-Fi / Hotspot as <strong>Albin's Laptop</strong></span>
               </div>
 
               {/* Real Device Link / Demo Testing Helpers */}
@@ -112,62 +164,6 @@ export const InteractiveConnection: React.FC<InteractiveConnectionProps> = ({
                 >
                   <span>Open phone companion in new window</span>
                   <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Incoming Connection Request Modal on Laptop */}
-          {state === 'WAITING_FOR_APPROVAL' && (
-            <div className="p-7 rounded-2xl bg-[#e6f2dd] border border-[#b1d3b9] text-center shadow-md animate-in fade-in zoom-in-95">
-              <div className="w-14 h-14 rounded-full bg-[#3d5f57] text-white flex items-center justify-center mx-auto mb-3.5 shadow-sm">
-                <Smartphone className="w-7 h-7" />
-              </div>
-
-              <h4 className="font-serif-editorial text-3xl text-[#1b3832]">
-                Connection request
-              </h4>
-
-              <p className="text-sm text-[#2d554c] mt-2 max-w-sm mx-auto leading-relaxed">
-                <strong>Albin's iPhone</strong> wants to connect to this laptop.
-              </p>
-
-              <div className="mt-7 flex items-center justify-center gap-4">
-                <button
-                  onClick={onDecline}
-                  className="px-6 py-2.5 text-xs font-semibold text-[#2d554c] bg-white border border-[#b1d3b9] rounded-full hover:bg-neutral-50 transition-colors cursor-pointer"
-                >
-                  Decline
-                </button>
-                <button
-                  onClick={onApprove}
-                  className="px-8 py-2.5 text-xs font-semibold text-white bg-[#3d5f57] hover:bg-[#2c4740] rounded-full transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Allow</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Connected State on Laptop */}
-          {state === 'CONNECTED' && (
-            <div className="text-center py-4">
-              <div className="w-14 h-14 rounded-full bg-[#e6f2dd] text-emerald-700 flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 className="w-7 h-7 text-[#3d5f57]" />
-              </div>
-              <h3 className="font-serif-editorial text-3xl font-normal text-[#1b3832]">
-                You're connected.
-              </h3>
-              <p className="text-sm text-[#2d554c] mt-1.5">
-                Your phone is ready to control your presentation.
-              </p>
-              <div className="mt-5">
-                <button
-                  onClick={onDisconnect}
-                  className="text-xs text-[#659287] hover:text-[#1b3832] transition-colors cursor-pointer underline"
-                >
-                  Disconnect phone
                 </button>
               </div>
             </div>

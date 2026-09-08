@@ -8,6 +8,7 @@ interface SlideRendererProps {
   showSlideNumber?: boolean;
   totalSlides?: number;
   compact?: boolean;
+  isProjector?: boolean;
 }
 
 export const SlideRenderer: React.FC<SlideRendererProps> = ({
@@ -17,13 +18,20 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
   showSlideNumber = false,
   totalSlides = 10,
   compact = false,
+  isProjector = false,
 }) => {
+  const isCustomBg = Boolean(slide.backgroundColor);
+  const slideBg = slide.backgroundColor || 'linear-gradient(135deg, #254b42 0%, #1b3832 50%, #152b27 100%)';
+  const slideColor = slide.textColor || '#f5f8f5';
+
   return (
     <div
-      className={`relative w-full aspect-[16/9] overflow-hidden rounded-lg sm:rounded-xl shadow-inner select-none transition-all duration-300 ${className}`}
+      className={`relative w-full aspect-[16/9] overflow-hidden ${
+        isProjector ? 'rounded-none' : 'rounded-lg sm:rounded-xl'
+      } shadow-inner select-none transition-all duration-300 ${className}`}
       style={{
-        background: 'linear-gradient(135deg, #254b42 0%, #1b3832 50%, #152b27 100%)',
-        color: '#f5f8f5',
+        background: slideBg.includes('gradient') || slideBg.startsWith('#') || slideBg.startsWith('rgb') ? slideBg : `#${slideBg}`,
+        color: slideColor,
       }}
     >
       {/* Blackout Overlay */}
@@ -37,55 +45,115 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
         </div>
       )}
 
-      {/* Slide Visual Background - Mountain/Forest Silhouette Aesthetic from reference */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <svg
-          viewBox="0 0 800 450"
-          className="w-full h-full object-cover"
-          preserveAspectRatio="none"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Distant mountains */}
-          <path
-            d="M0 240L140 180L280 230L460 140L620 220L750 170L800 200V450H0V240Z"
-            fill="#326054"
-            opacity="0.5"
-          />
-          {/* Midground misty ridge */}
-          <path
-            d="M0 280L180 230L340 300L520 220L680 280L800 240V450H0V280Z"
-            fill="#23463e"
-            opacity="0.8"
-          />
-          {/* Foreground pine treeline silhouettes */}
-          <path
-            d="M0 360 C50 340 100 350 150 330 C220 310 280 340 350 320 C420 300 490 330 560 310 C640 330 720 310 800 330 V450 H0 Z"
-            fill="#122521"
-          />
-          {/* Soft ambient mist glow */}
-          <ellipse cx="400" cy="190" rx="360" ry="120" fill="#88bda4" opacity="0.15" />
-        </svg>
-      </div>
+      {/* Render Real PDF/Image Slide if provided (Exact 1:1 slide duplication) */}
+      {slide.imageUrl && (
+        <img
+          src={slide.imageUrl}
+          alt={slide.title}
+          className="absolute inset-0 w-full h-full object-contain bg-black/5 z-20 pointer-events-none"
+        />
+      )}
 
-      {/* Slide Content Layout */}
-      <div className="relative z-10 w-full h-full p-5 sm:p-7 md:p-8 flex flex-col justify-between">
-        {/* Top bar with category / brand */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-[#88bda4] px-2.5 py-0.5 rounded-full bg-[#1b3832]/60 border border-[#659287]/40">
-              {slide.category}
-            </span>
-          </div>
-          {showSlideNumber && (
-            <span className="text-[11px] sm:text-xs font-mono font-medium text-[#b1d3b9]/80">
-              {slide.id} / {totalSlides}
-            </span>
-          )}
-        </div>
+      {/* Slide Content Layout - Pure Slide Canvas (Only if not displaying pure image) */}
+      {!slide.imageUrl && (
+        <div className="relative z-10 w-full h-full p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+          {/* Center Content based on graphicType */}
+          <div className="my-auto py-1 w-full">
+          {/* REAL PPT SLIDE: Positioned Shapes Layout */}
+          {(slide.graphicType === 'custom' || slide.isRealSlide) && slide.shapes && slide.shapes.length > 0 ? (
+            <div className="absolute inset-0 w-full h-full pointer-events-none p-6 sm:p-10">
+              {slide.shapes.map((shape) => (
+                <div
+                  key={shape.id}
+                  className="absolute flex flex-col justify-start"
+                  style={{
+                    left: `${shape.xPercent}%`,
+                    top: `${shape.yPercent}%`,
+                    width: `${shape.widthPercent}%`,
+                    height: `${shape.heightPercent}%`,
+                  }}
+                >
+                  {shape.type === 'image' && shape.imageUrl ? (
+                    <img
+                      src={shape.imageUrl}
+                      alt="PPT element"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col justify-center">
+                      {shape.paragraphs?.map((p, pIdx) => {
+                        const alignClass =
+                          p.align === 'center'
+                            ? 'text-center'
+                            : p.align === 'right'
+                            ? 'text-right'
+                            : 'text-left';
 
-        {/* Center Content based on graphicType */}
-        <div className="my-auto py-1">
+                        return (
+                          <div
+                            key={pIdx}
+                            className={`leading-snug ${alignClass} ${
+                              p.isBold ? 'font-bold' : 'font-normal'
+                            } my-0.5`}
+                            style={{
+                              color: p.color || slide.textColor || '#1b3832',
+                              fontSize: p.fontSize
+                                ? `clamp(11px, ${p.fontSize * 0.9}px, 3.5vw)`
+                                : undefined,
+                            }}
+                          >
+                            {p.isBullet && <span className="mr-1.5 opacity-70">•</span>}
+                            <span>{p.text}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (slide.graphicType === 'custom' || slide.isRealSlide) ? (
+            <div className="w-full flex-1 flex flex-col justify-center">
+              <h2
+                className="font-serif-editorial text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight mb-3"
+                style={{ color: slide.textColor || 'inherit' }}
+              >
+                {slide.title}
+              </h2>
+              {slide.subtitle && (
+                <p
+                  className="font-sans text-sm sm:text-base md:text-lg mb-4 opacity-80"
+                  style={{ color: slide.textColor || 'inherit' }}
+                >
+                  {slide.subtitle}
+                </p>
+              )}
+
+              <div className="flex flex-col md:flex-row items-center gap-6 mt-2">
+                {slide.bulletPoints && slide.bulletPoints.length > 0 && (
+                  <div className="flex-1 space-y-2.5 w-full">
+                    {slide.bulletPoints.map((pt, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-2 text-xs sm:text-sm md:text-base leading-relaxed"
+                        style={{ color: slide.textColor || 'inherit' }}
+                      >
+                        <span className="text-emerald-500 font-bold mt-0.5">•</span>
+                        <span className="opacity-90">{pt}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {slide.imageUrl && (
+                  <div className="max-w-xs max-h-56 rounded-xl overflow-hidden shadow-lg border border-black/10 shrink-0">
+                    <img src={slide.imageUrl} alt="Slide figure" className="w-full h-full object-contain" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
           {slide.graphicType === 'hero' && (
             <div className="max-w-xl">
               <h2 className="font-serif-editorial text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal tracking-tight text-white leading-[1.15]">
@@ -219,17 +287,8 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
             </div>
           )}
         </div>
-
-        {/* Slide Footer */}
-        <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[10px] sm:text-[11px] text-neutral-400">
-          <span className="font-cursive text-base sm:text-lg text-[#b1d3b9] opacity-90">
-            Presently
-          </span>
-          <span className="tracking-wider uppercase text-[9px] sm:text-[10px] text-neutral-400">
-            Build · Present · Create
-          </span>
-        </div>
       </div>
+      )}
     </div>
   );
 };

@@ -1,19 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SlideRenderer } from './SlideRenderer';
-import { PresentationState, SlideData, Device } from '../types';
+import { PresentationState, SlideData } from '../types';
 import { ConnectionInfo } from '../services/connectionService';
 import {
   Monitor,
   Clock,
-  Wifi,
   CheckCircle2,
   XCircle,
-  FileText,
   ExternalLink,
   Smartphone,
-  Maximize2,
-  ChevronRight,
-  BookOpen,
   Layers
 } from 'lucide-react';
 
@@ -50,10 +45,6 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
   onOpenPhoneCompanion,
   onExitPresentation,
 }) => {
-  const [activeTab, setActiveTab] = useState<'notes' | 'research'>('notes');
-
-  const nextSlide = presentation.slides[presentation.currentSlide] || null;
-
   const formatTime = (secs: number) => {
     const mins = Math.floor(secs / 60);
     const remSecs = secs % 60;
@@ -174,21 +165,21 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* Main Multi-Pane Presenter Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Slide Thumbnails (2 cols on large) */}
-        <div className="hidden md:flex lg:col-span-3 flex-col bg-[#14231f] rounded-xl p-3 border border-[#2d554c] max-h-[460px]">
+      {/* Main Presenter Workspace Layout: Clean Slide-First Minimalist */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+        {/* Left Column: Clean Slide Thumbnails List */}
+        <div className="hidden md:flex md:col-span-3 flex-col bg-[#14231f] rounded-xl p-3 border border-[#2d554c] max-h-[520px]">
           <div className="flex items-center justify-between text-xs text-[#88bda4] font-semibold uppercase tracking-wider mb-2 px-1">
             <span className="flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5" />
-              <span>Slides Deck</span>
+              <span>Slides</span>
             </span>
             <span className="font-mono text-[10px] text-neutral-400">
               {presentation.currentSlide} / {presentation.totalSlides}
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
             {presentation.slides.map((s) => (
               <button
                 key={s.id}
@@ -196,36 +187,28 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
                 className={`w-full text-left p-2 rounded-lg transition-all cursor-pointer flex items-center gap-2.5 ${
                   presentation.currentSlide === s.id
                     ? 'bg-[#659287]/30 border border-[#88bda4] text-white shadow-xs'
-                    : 'bg-[#1b3832]/60 hover:bg-[#254b42] border border-transparent text-neutral-300'
+                    : 'bg-[#1b3832]/40 hover:bg-[#254b42] border border-transparent text-neutral-300'
                 }`}
               >
-                <span className="font-mono text-xs font-semibold text-[#88bda4] w-4 text-right">
+                <span className="font-mono text-xs font-semibold text-[#88bda4] w-5 text-right">
                   {s.id}
                 </span>
                 <div className="flex-1 truncate">
-                  <p className="text-xs font-medium truncate">{s.title}</p>
-                  <p className="text-[10px] text-neutral-400 truncate">{s.category}</p>
+                  <p className="text-xs font-medium truncate">{s.title || `Slide ${s.id}`}</p>
                 </div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Center Column: Live Active Presentation Slide (6 cols on large) */}
-        <div className="lg:col-span-6 flex flex-col justify-between">
+        {/* Center/Main Column: Minimalist Slide Display Only */}
+        <div className="md:col-span-9 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-[#b1d3b9] mb-1.5">
-              <span className="font-medium">Current Slide (Live to Audience)</span>
-              <span className="font-mono">
-                {presentation.currentSlide} of {presentation.totalSlides}
-              </span>
-            </div>
-
-            <div className="rounded-xl overflow-hidden border border-[#88bda4]/40 shadow-lg relative">
+            <div className="rounded-xl overflow-hidden border border-[#88bda4]/30 shadow-2xl relative bg-black/40">
               <SlideRenderer
                 slide={currentSlideData}
                 isBlackout={presentation.blackout}
-                showSlideNumber={true}
+                showSlideNumber={false}
                 totalSlides={presentation.totalSlides}
               />
             </div>
@@ -237,23 +220,23 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
               <button
                 onClick={onPrev}
                 disabled={presentation.currentSlide <= 1}
-                className="px-3 py-1.5 text-xs font-medium bg-[#254b42] hover:bg-[#2d554c] rounded-lg transition-colors disabled:opacity-30 cursor-pointer"
+                className="px-4 py-2 text-xs font-medium bg-[#254b42] hover:bg-[#2d554c] rounded-lg transition-colors disabled:opacity-30 cursor-pointer"
               >
-                ← Prev Slide
+                ← Prev
               </button>
               <button
                 onClick={onNext}
                 disabled={presentation.currentSlide >= presentation.totalSlides}
-                className="px-3 py-1.5 text-xs font-semibold bg-[#659287] hover:bg-[#52776e] text-white rounded-lg transition-colors disabled:opacity-30 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold bg-[#659287] hover:bg-[#52776e] text-white rounded-lg transition-colors disabled:opacity-30 cursor-pointer"
               >
-                Next Slide →
+                Next →
               </button>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={onToggleBlackout}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   presentation.blackout
                     ? 'bg-amber-500 text-black font-semibold'
                     : 'bg-[#254b42] hover:bg-[#2d554c] text-neutral-200'
@@ -263,83 +246,6 @@ export const LaptopWorkspace: React.FC<LaptopWorkspaceProps> = ({
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Right Column: Next Slide Preview & Private Speaker Notes (3 cols on large) */}
-        <div className="lg:col-span-3 flex flex-col justify-between bg-[#14231f] rounded-xl p-3.5 border border-[#2d554c]">
-          {/* Tab Switcher */}
-          <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                  activeTab === 'notes' ? 'text-[#e6f2dd]' : 'text-neutral-400 hover:text-neutral-200'
-                }`}
-              >
-                Speaker Notes
-              </button>
-              <button
-                onClick={() => setActiveTab('research')}
-                className={`text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                  activeTab === 'research' ? 'text-[#e6f2dd]' : 'text-neutral-400 hover:text-neutral-200'
-                }`}
-              >
-                Reference Doc
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Content: Speaker Notes */}
-          {activeTab === 'notes' ? (
-            <div className="flex-1 flex flex-col justify-between">
-              <div>
-                <div className="text-[11px] font-semibold text-[#88bda4] mb-1">
-                  Talking Points:
-                </div>
-                <p className="text-xs text-[#e6f2dd] leading-relaxed bg-[#1b3832]/60 p-2.5 rounded-lg border border-[#2d554c]">
-                  {currentSlideData.notes}
-                </p>
-              </div>
-
-              {/* Next Slide Preview Box */}
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5 flex items-center justify-between">
-                  <span>Up Next</span>
-                  {nextSlide && <span className="font-mono">Slide {nextSlide.id}</span>}
-                </div>
-                {nextSlide ? (
-                  <div className="p-2 rounded-lg bg-[#1b3832] border border-[#2d554c]">
-                    <p className="text-xs font-medium text-white truncate">{nextSlide.title}</p>
-                    <p className="text-[10px] text-[#88bda4] truncate mt-0.5">
-                      {nextSlide.subtitle || nextSlide.category}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-2 rounded-lg bg-[#1b3832] text-[11px] text-neutral-400 text-center">
-                    End of Presentation
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            /* Tab Content: Presenter's Private Reference / PDF workspace */
-            <div className="flex-1 flex flex-col justify-between text-xs space-y-2">
-              <div className="p-2.5 rounded-lg bg-[#1b3832] border border-[#2d554c]">
-                <h4 className="font-semibold text-white flex items-center gap-1.5 mb-1">
-                  <BookOpen className="w-3.5 h-3.5 text-[#88bda4]" />
-                  <span>Key Metrics Cheatsheet</span>
-                </h4>
-                <ul className="text-[11px] text-neutral-300 space-y-1 mt-1">
-                  <li>• Audience engagement +40% with companion display</li>
-                  <li>• Sub-15ms local network sync latency</li>
-                  <li>• Zero cloud infrastructure dependency</li>
-                </ul>
-              </div>
-              <p className="text-[10px] text-neutral-400 italic">
-                The audience on the projector only sees your clean presentation slides, while you freely browse research or notes here.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

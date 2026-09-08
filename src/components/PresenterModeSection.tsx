@@ -62,123 +62,126 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
 
           {/* ========================================================= */}
           {/* THE PHYSICAL TOPOLOGY DIAGRAM (Phone -> Laptop -> Projector) */}
+          {/* Mobile: Horizontal scroll cards to minimize vertical height! */}
           {/* ========================================================= */}
-          <div className="mb-12 p-6 sm:p-8 rounded-2xl bg-[#10211d]/90 border border-[#2d554c] relative z-10">
-            <div className="text-center max-w-xl mx-auto mb-6">
-              <span className="text-[11px] font-mono uppercase tracking-widest text-[#88bda4]">
-                Intended Physical Setup
+          <div className="mb-10 p-4 sm:p-8 rounded-2xl bg-[#10211d]/90 border border-[#2d554c] relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-6">
+              <div>
+                <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-[#88bda4]">
+                  Intended Physical Setup
+                </span>
+                <h3 className="font-serif-editorial text-lg sm:text-2xl text-white mt-0.5">
+                  How the hardware connects in the room
+                </h3>
+              </div>
+              <span className="text-[11px] text-[#88bda4]/70 sm:hidden flex items-center gap-1 font-mono">
+                Swipe sideways →
               </span>
-              <h3 className="font-serif-editorial text-xl sm:text-2xl text-white mt-1">
-                How the hardware connects in the room
-              </h3>
             </div>
 
-            {/* Vertical Flow Diagram with Connecting Arrows */}
-            <div className="max-w-2xl mx-auto flex flex-col items-center">
-              {/* NODE 1: PHONE */}
-              <div className="w-full sm:w-[480px] p-4 rounded-xl bg-[#18312a] border border-[#659287]/50 shadow-md flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center shrink-0">
-                    <Smartphone className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">📱 PHONE</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
-                        In Presenter's Hand
-                      </span>
+            {/* Horizontal Scroll Layout on Mobile / Stacked on Large */}
+            <div className="overflow-x-auto pb-3 pt-1 -mx-2 px-2 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-[#2d554c] scrollbar-track-transparent">
+              <div className="flex flex-nowrap lg:flex-row items-center gap-3 min-w-[720px] lg:min-w-0 justify-between">
+                
+                {/* NODE 1: PHONE */}
+                <div className="flex-1 min-w-[220px] p-3.5 rounded-xl bg-[#18312a] border border-[#659287]/50 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center shrink-0">
+                      <Smartphone className="w-5 h-5" />
                     </div>
-                    <p className="text-xs text-[#b1d3b9] mt-0.5 font-medium">
-                      Remote + live preview
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right hidden sm:block">
-                  <span className="text-[11px] font-mono text-[#88bda4]">Control</span>
-                </div>
-              </div>
-
-              {/* CONNECTING FLOW 1 */}
-              <div className="flex flex-col items-center my-1.5 py-1 text-center">
-                <div className="w-[2px] h-6 bg-gradient-to-b from-[#659287] to-[#88bda4]" />
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#14231f] border border-[#2d554c] my-1 text-[11px] text-[#88bda4] font-medium shadow-xs">
-                  <Wifi className="w-3 h-3 text-emerald-400" />
-                  <span>Wireless sync · sub-15ms latency</span>
-                </div>
-                <div className="w-[2px] h-6 bg-gradient-to-b from-[#88bda4] to-[#659287]" />
-                <ArrowDown className="w-4 h-4 text-[#88bda4] -mt-1" />
-              </div>
-
-              {/* NODE 2: LAPTOP */}
-              <div className="w-full sm:w-[480px] p-4 rounded-xl bg-[#1c3831] border-2 border-[#88bda4] shadow-lg flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-[#2a5349] text-white flex items-center justify-center shrink-0">
-                    <Laptop className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">💻 LAPTOP</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#88bda4] text-[#14231f] font-bold">
-                        On Podium / Desk
-                      </span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white">📱 PHONE</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
+                          In Hand
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#b1d3b9] mt-0.5 font-medium">
+                        Remote + live preview
+                      </p>
                     </div>
-                    <p className="text-xs text-[#e6f2dd] mt-0.5 font-medium">
-                      Private workspace (Notes, PDFs, Browser, Research)
-                    </p>
                   </div>
                 </div>
-                <div className="text-right hidden sm:block">
-                  <span className="text-[11px] font-mono text-emerald-300">Private</span>
-                </div>
-              </div>
 
-              {/* CONNECTING FLOW 2 */}
-              <div className="flex flex-col items-center my-1.5 py-1 text-center">
-                <div className="w-[2px] h-6 bg-gradient-to-b from-[#88bda4] to-[#659287]" />
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#14231f] border border-[#2d554c] my-1 text-[11px] text-[#88bda4] font-medium shadow-xs">
-                  <Cable className="w-3 h-3 text-emerald-400" />
-                  <span>Extended Display (HDMI / USB-C / AirPlay)</span>
-                </div>
-                <div className="w-[2px] h-6 bg-gradient-to-b from-[#659287] to-[#88bda4]" />
-                <ArrowDown className="w-4 h-4 text-[#88bda4] -mt-1" />
-              </div>
-
-              {/* NODE 3: PROJECTOR */}
-              <div className="w-full sm:w-[480px] p-4 rounded-xl bg-[#18312a] border border-[#659287]/50 shadow-md flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center shrink-0">
-                    <Monitor className="w-6 h-6" />
+                {/* HORIZONTAL CONNECTOR 1 */}
+                <div className="flex flex-col items-center justify-center shrink-0 px-1 text-center">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#14231f] border border-[#2d554c] text-[10px] text-[#88bda4] font-medium shadow-xs whitespace-nowrap">
+                    <Wifi className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>Wireless sync · &lt;15ms</span>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">🖥 PROJECTOR</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
-                        Venue Screen
-                      </span>
+                  <span className="text-[#88bda4] text-xs font-mono mt-0.5">➔</span>
+                </div>
+
+                {/* NODE 2: LAPTOP */}
+                <div className="flex-1 min-w-[240px] p-3.5 rounded-xl bg-[#1c3831] border-2 border-[#88bda4] shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#2a5349] text-white flex items-center justify-center shrink-0">
+                      <Laptop className="w-5 h-5" />
                     </div>
-                    <p className="text-xs text-[#b1d3b9] mt-0.5 font-medium">
-                      Audience presentation (Pure 16:9 slides)
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white">💻 LAPTOP</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#88bda4] text-[#14231f] font-bold">
+                          Private
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#e6f2dd] mt-0.5 font-medium leading-snug">
+                        Podium workspace (Notes & PDFs)
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right hidden sm:block">
-                  <span className="text-[11px] font-mono text-[#88bda4]">Audience</span>
+
+                {/* HORIZONTAL CONNECTOR 2 */}
+                <div className="flex flex-col items-center justify-center shrink-0 px-1 text-center">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#14231f] border border-[#2d554c] text-[10px] text-[#88bda4] font-medium shadow-xs whitespace-nowrap">
+                    <Cable className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>Extended Display</span>
+                  </div>
+                  <span className="text-[#88bda4] text-xs font-mono mt-0.5">➔</span>
                 </div>
+
+                {/* NODE 3: PROJECTOR */}
+                <div className="flex-1 min-w-[220px] p-3.5 rounded-xl bg-[#18312a] border border-[#659287]/50 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#23463e] text-[#b1d3b9] flex items-center justify-center shrink-0">
+                      <Monitor className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white">🖥 PROJECTOR</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
+                          Screen
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#b1d3b9] mt-0.5 font-medium">
+                        Pure 16:9 audience presentation
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
 
           {/* ========================================================= */}
           {/* THE 3 REAL SURFACES GRID                                  */}
-          {/* Surface 1: Phone (Control)                                */}
-          {/* Surface 2: Laptop (Private Workspace)                     */}
-          {/* Surface 3: Projector (Audience Presentation)              */}
           {/* ========================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
-            {/* ------------------------------------------------------- */}
-            {/* SURFACE 1: PHONE → CONTROL                              */}
-            {/* ------------------------------------------------------- */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-6 border border-[#2d554c] shadow-lg hover:border-[#659287] transition-all">
+          {/* THE 3 REAL SURFACES                                       */}
+          {/* Mobile: Horizontal scrollable cards to reduce height      */}
+          {/* Desktop: 3-Column Grid                                    */}
+          {/* ========================================================= */}
+          <div className="mb-2 flex items-center justify-between sm:hidden px-1">
+            <span className="text-[11px] font-mono text-[#88bda4]">3 Distinct Roles</span>
+            <span className="text-[11px] font-mono text-[#88bda4]/70">Swipe sideways →</span>
+          </div>
+          <div className="overflow-x-auto pb-4 pt-2 -mx-2 px-2 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-[#2d554c] scrollbar-track-transparent">
+            <div className="flex flex-nowrap lg:grid lg:grid-cols-12 gap-5 sm:gap-8 items-stretch relative z-10 min-w-[840px] lg:min-w-0">
+              {/* ------------------------------------------------------- */}
+              {/* SURFACE 1: PHONE → CONTROL                              */}
+              {/* ------------------------------------------------------- */}
+              <div className="w-[280px] sm:w-[320px] lg:w-auto lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-5 sm:p-6 border border-[#2d554c] shadow-lg hover:border-[#659287] transition-all shrink-0">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
@@ -260,7 +263,7 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
             {/* ------------------------------------------------------- */}
             {/* SURFACE 2: LAPTOP → PRIVATE WORKSPACE                   */}
             {/* ------------------------------------------------------- */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-6 border-2 border-[#88bda4]/60 shadow-xl relative">
+            <div className="w-[290px] sm:w-[330px] lg:w-auto lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-5 sm:p-6 border-2 border-[#88bda4]/60 shadow-xl relative shrink-0">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#88bda4] text-[#14231f] text-[10px] font-bold uppercase tracking-wider shadow-sm">
                 Your Screen Remains Yours
               </div>
@@ -352,7 +355,7 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
             {/* ------------------------------------------------------- */}
             {/* SURFACE 3: PROJECTOR → AUDIENCE                         */}
             {/* ------------------------------------------------------- */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-6 border border-[#2d554c] shadow-lg hover:border-[#659287] transition-all">
+            <div className="w-[280px] sm:w-[320px] lg:w-auto lg:col-span-4 flex flex-col justify-between bg-[#14231f] rounded-2xl p-5 sm:p-6 border border-[#2d554c] shadow-lg hover:border-[#659287] transition-all shrink-0">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
@@ -437,36 +440,41 @@ export const PresenterModeSection: React.FC<PresenterModeSectionProps> = ({ onSt
               </div>
             </div>
           </div>
+        </div>
 
           {/* ========================================================= */}
           {/* SYNCHRONIZATION FLOW EXPLANATION BANNER                   */}
           {/* ========================================================= */}
-          <div className="mt-10 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 text-left relative z-10">
-            <div className="p-4 rounded-xl bg-[#10211d] border border-white/5">
-              <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
-                01. Phone Controls
-              </span>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                When you tap Next on your phone, slide 12 advances to slide 13 in under 15 milliseconds.
-              </p>
-            </div>
+          <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+            <div className="overflow-x-auto pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 scrollbar-thin scrollbar-thumb-[#2d554c] scrollbar-track-transparent">
+              <div className="flex flex-nowrap md:grid md:grid-cols-3 gap-4 text-left min-w-[620px] md:min-w-0">
+                <div className="flex-1 p-4 rounded-xl bg-[#10211d] border border-white/5 min-w-[190px]">
+                  <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
+                    01. Phone Controls
+                  </span>
+                  <p className="text-xs text-neutral-300 leading-relaxed">
+                    Tap Next on your phone — slides advance in under 15ms.
+                  </p>
+                </div>
 
-            <div className="p-4 rounded-xl bg-[#10211d] border border-white/5">
-              <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
-                02. Projector Presents
-              </span>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                The external display instantly transitions to slide 13 for the whole room with fluid typography and graphics.
-              </p>
-            </div>
+                <div className="flex-1 p-4 rounded-xl bg-[#10211d] border border-white/5 min-w-[190px]">
+                  <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
+                    02. Projector Presents
+                  </span>
+                  <p className="text-xs text-neutral-300 leading-relaxed">
+                    External display instantly transitions for the audience.
+                  </p>
+                </div>
 
-            <div className="p-4 rounded-xl bg-[#10211d] border border-white/5">
-              <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
-                03. Laptop Stays Available
-              </span>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                Your laptop updates talking points for slide 13 while your reference PDF and other applications stay open.
-              </p>
+                <div className="flex-1 p-4 rounded-xl bg-[#10211d] border border-white/5 min-w-[190px]">
+                  <span className="text-[11px] font-mono text-[#88bda4] block mb-1">
+                    03. Laptop Stays Free
+                  </span>
+                  <p className="text-xs text-neutral-300 leading-relaxed">
+                    Notes update while PDFs and other applications remain private.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
