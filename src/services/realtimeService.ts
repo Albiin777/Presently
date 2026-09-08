@@ -55,10 +55,12 @@ class RealtimeService {
   }
 
   private startNetworkPolling() {
+    let failureCount = 0;
     const poll = async () => {
       try {
         const res = await fetch(`/api/sync/poll?since=${this.lastPolledId}`);
         if (res.ok) {
+          failureCount = 0;
           const json = await res.json();
           if (json.messages && Array.isArray(json.messages)) {
             for (const item of json.messages) {
@@ -71,14 +73,19 @@ class RealtimeService {
           if (json.latestId !== undefined) {
             this.lastPolledId = Math.max(this.lastPolledId, json.latestId);
           }
+        } else {
+          failureCount++;
         }
       } catch {
-        // Network unavailable or server restarting
+        failureCount++;
+      } finally {
+        // Adapt polling rate: 350ms during active healthy connection, back off to 2s if endpoint not yet deployed
+        const delay = failureCount > 3 ? 2000 : 350;
+        setTimeout(poll, delay);
       }
     };
 
-    // Fast polling (every 350ms) for ultra-low latency presentation remote control across Wi-Fi
-    setInterval(poll, 350);
+    poll();
   }
 
   public subscribe(handler: MessageHandler): () => void {
