@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/sync/poll",
+      "destination": "/api/sync/poll"
+    },
+    {
+      "source": "/api/sync/send",
+      "destination": "/api/sync/send"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

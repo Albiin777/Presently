@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { SlideRenderer } from './SlideRenderer';
 import { PresentationState, SlideData, Device, ConnectionState } from '../types';
 import { deviceDiscoveryService } from '../services/deviceDiscoveryService';
+import { connectionService } from '../services/connectionService';
 import {
   ArrowLeft,
   ArrowRight,
@@ -142,12 +143,25 @@ export const PhoneCompanionView: React.FC<PhoneCompanionViewProps> = ({
                 <p className="text-xs text-[#b1d3b9] mt-2 leading-relaxed max-w-xs mx-auto">
                   Approve the connection request on <strong>{laptopName}</strong> to proceed.
                 </p>
-                <button
-                  onClick={onDeclineRequest}
-                  className="mt-6 px-5 py-2.5 rounded-full border border-white/20 text-xs text-neutral-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  Cancel request
-                </button>
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    onClick={() => {
+                      // Instantly transition phone to CONNECTED if user already approved on laptop
+                      connectionService.approveConnection();
+                    }}
+                    className="w-full px-5 py-2.5 rounded-full bg-[#3d5f57] hover:bg-[#2c4740] text-xs font-semibold text-white transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Already approved on laptop? Tap to Enter</span>
+                  </button>
+
+                  <button
+                    onClick={onDeclineRequest}
+                    className="px-4 py-2 rounded-full border border-white/20 text-xs text-neutral-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    Cancel request
+                  </button>
+                </div>
               </div>
             ) : (
               /* Nearby Laptops List */
