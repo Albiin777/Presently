@@ -1,5 +1,6 @@
 import { ConnectionState, Device } from '../types';
 import { realtimeService } from './realtimeService';
+import { presentationService } from './presentationService';
 
 export interface ConnectionInfo {
   state: ConnectionState;
@@ -96,8 +97,11 @@ class ConnectionService {
     this.info.pendingApproval = false;
     this.info.connectedAt = Date.now();
     this.notify(true, 'APPROVE_PAIR', { state: 'CONNECTED' });
-    // Also send an explicit state synchronization broadcast
     this.notify(true, 'SYNC_CONNECTION', this.info);
+    
+    // Broadcast active presentation snapshot so phone syncs to the real loaded presentation immediately
+    const presState = presentationService.getState();
+    realtimeService.broadcast('SYNC_PRESENTATION_STATE', presState);
   }
 
   public declineConnection(): void {

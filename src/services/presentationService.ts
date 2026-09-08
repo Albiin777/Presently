@@ -7,22 +7,59 @@ export type PresentationChangeListener = (state: PresentationState) => void;
 
 class PresentationService {
   private state: PresentationState = {
-    title: 'INCINERATE.pptx',
+    title: 'Presentation',
     file: null,
-    currentSlide: 12,
-    totalSlides: DEMO_SLIDES.length,
+    currentSlide: 1,
+    totalSlides: 1,
     presenting: false,
     blackout: false,
     elapsedSeconds: 0,
-    slides: DEMO_SLIDES,
+    slides: [
+      {
+        id: 1,
+        category: 'Slide 1',
+        title: 'Ready to present',
+        subtitle: 'Upload a presentation PDF or slide images on your laptop to begin.',
+        graphicType: 'hero',
+        backgroundColor: '#1b3832',
+        textColor: '#ffffff',
+        notes: '',
+        isRealSlide: true,
+      },
+    ],
   };
 
   private listeners: Set<PresentationChangeListener> = new Set();
   private timerInterval: NodeJS.Timeout | null = null;
 
   constructor() {
+    // Restore real presentation from storage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('presently_active_presentation');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.slides && parsed.slides.length > 0) {
+            this.state = {
+              ...this.state,
+              ...parsed,
+            };
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     realtimeService.subscribe((msg) => {
-      if (msg.type === 'LOAD_PRESENTATION') {
+      if (msg.type === 'SYNC_PRESENTATION_STATE' && msg.payload) {
+        const payload = msg.payload as PresentationState;
+        this.state = {
+          ...this.state,
+          ...payload,
+        };
+        this.notify(false);
+      } else if (msg.type === 'LOAD_PRESENTATION') {
         const payload = msg.payload as { file: PresentationFile; slides?: SlideData[] } | PresentationFile;
         if ('file' in payload && payload.file) {
           this.state.file = payload.file;
@@ -119,10 +156,29 @@ class PresentationService {
     this.state.title = name;
     this.state.slides = actualSlides;
     this.state.totalSlides = count;
-    this.state.currentSlide = isDemo ? 12 : 1;
+    this.state.currentSlide = 1;
     this.state.presenting = false;
 
+    // Save to localStorage for instant local tab / pop-up window synchronization
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          'presently_active_presentation',
+          JSON.stringify({
+            title: name,
+            file,
+            slides: actualSlides,
+            totalSlides: count,
+            currentSlide: 1,
+          })
+        );
+      } catch {
+        // storage quota fallback
+      }
+    }
+
     this.notify(true, 'LOAD_PRESENTATION', { file, slides: actualSlides });
+    realtimeService.broadcast('SYNC_PRESENTATION_STATE', this.getState());
   }
 
   public startPresenting(): void {
