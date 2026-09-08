@@ -1,5 +1,4 @@
 import { PresentationState, PresentationFile, SlideData } from '../types';
-import { DEMO_SLIDES } from '../data/slides';
 import { realtimeService } from './realtimeService';
 import { generateSlidesForFile } from '../utils/slideGenerator';
 
@@ -72,13 +71,8 @@ class PresentationService {
           const file = payload as PresentationFile;
           this.state.file = file;
           this.state.title = file.name;
-          if (!file.name.includes('INCINERATE')) {
-            this.state.slides = generateSlidesForFile(file.name, file.totalSlides || 20);
-            this.state.totalSlides = this.state.slides.length;
-          } else {
-            this.state.slides = DEMO_SLIDES;
-            this.state.totalSlides = DEMO_SLIDES.length;
-          }
+          this.state.slides = generateSlidesForFile(file.name, file.totalSlides || 20);
+          this.state.totalSlides = this.state.slides.length;
         }
         this.state.currentSlide = 1;
         this.state.presenting = false;
@@ -140,8 +134,7 @@ class PresentationService {
   }
 
   public loadPresentation(name: string, totalSlides = 20, customSlides?: SlideData[]): void {
-    const isDemo = name.includes('INCINERATE');
-    const actualSlides = customSlides || (isDemo ? DEMO_SLIDES : generateSlidesForFile(name, totalSlides));
+    const actualSlides = customSlides || generateSlidesForFile(name, totalSlides);
     const count = actualSlides.length;
 
     const file: PresentationFile = {

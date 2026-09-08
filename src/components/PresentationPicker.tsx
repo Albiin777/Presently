@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { PresentationFile, SlideData } from '../types';
-import { FileUp, FileText, CheckCircle2, Play, ArrowRight, Loader2 } from 'lucide-react';
+import { FileUp, CheckCircle2, Play, ArrowRight, Loader2 } from 'lucide-react';
 import { parsePptxFile, parsePdfFile } from '../utils/filePresentationParser';
 
 interface PresentationPickerProps {
@@ -219,20 +219,6 @@ export const PresentationPicker: React.FC<PresentationPickerProps> = ({
                 </span>
               </>
             )}
-          </div>
-
-          {/* Quick Demo deck option for immediate testing */}
-          <div className="pt-2 border-t border-[#b1d3b9]/40">
-            <span className="text-xs text-[#2d554c] block mb-2">
-              Want to test right away without uploading?
-            </span>
-            <button
-              onClick={() => onSelectFile('INCINERATE.pptx', 28)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e6f2dd] hover:bg-[#d6e8cb] text-xs font-semibold text-[#1b3832] transition-colors cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5 text-[#547f74]" />
-              <span>Use demo presentation (INCINERATE.pptx · 28 slides)</span>
-            </button>
           </div>
         </div>
       ) : (
